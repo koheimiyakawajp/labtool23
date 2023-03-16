@@ -1,0 +1,55 @@
+ダーク測定: 2回目（温度に対して５Kグリッドになるように）
+バッフルをはずし、検出器受光部の窓をアルミテープで
+三重にして蓋をした。
+真空箱も同様にアルミテープでしっかりめに外側から窓を塞いだ。
+
+チャンネル1にDaughter board(470pF)を載せた明星BBMを使用。
+明星BBMに fee-1.4 の FPGAソースを焼き込んだ EDX009 を載せている
+電源電圧は24V。
+
+CH1: AD変換器に入る電圧(SIG_OUT)
+CH2: Daughter boardに入る電圧(SIG_HOT)
+CH3: RESET_ALL
+CH4: HCLK
+
+クロックp02n00001: リセットをせずに約0.1秒ごとに値を取得。約1.5秒 = 16フレーム分。
+クロックp02n00010: リセットをせずに約1秒ごとに値を取得。約15秒 = 16フレーム分。
+検出器170K (コールドヘッド120K, 検出器箱121.6K), チャンバー1.1e-4 Pa
+
+#詳細はdarklog.csvに記載。
+
+jex1> texio_PAR36.py -v 24 -i 1
+
+fee_clock.py load -f ../clkdata/testp02n00001.bin
+fee_clock.py load -f ../clkdata/testp02n00010.bin
+fee_clock.py load -f ../clkdata/testp02n00050.bin
+fee_clock.py load -f ../clkdata/testp02n02400.bin
+
+fee_portjump.py 0
+
+fee_power.py w clock -v 1.1
+fee_power.py w vdd
+fee_power.py w sfd
+fee_power.py w vrpix
+fee_power.py w vb1
+fee_power.py w voffset -v 3.0
+fee_power.py w bias5
+fee_power.py pu all
+fee_power.py w clock -v 2.2
+fee_power.py pu all
+fee_power.py w clock -v 3.3
+fee_power.py pu all
+
+fee_clock.py go
+
+fee_moncheck.py -s
+
+撮像&ダウンロード
+take_image.py
+
+終わるとき
+fee_portjump.py 1
+
+fee_power.py w all -v 0
+fee_power.py pu all
+
