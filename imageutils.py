@@ -8,6 +8,17 @@ from cal_nphoton_map import obs_nphoton, filter
 from scipy.interpolate import interp1d
 from copy import copy
 
+thres   = 20
+nx      = 144
+ny      = 144
+nf      = 16
+
+pi  = np.pi
+h   = 6.62607015e-34    #Js
+c   = 2.99792485e+8     #m/s
+k   = 1.380649e-23      #J/K
+
+
 def ext_imagearray2303(file_bin, flg=1, ndummy=8):
 
   with open(file_bin, mode='rb') as f:
@@ -29,13 +40,18 @@ def ext_imagearray2303(file_bin, flg=1, ndummy=8):
 
     frame_0 = np.array(data[0:nx*ny], dtype='i8').reshape(nx,ny)
     frame_0 = frame_0[ndummy:-1*ndummy,ndummy:-1*ndummy]
-    frame_a = np.array(data[nx*ny:2*nx*ny], dtype='i8').reshape(nx,ny)
+    frame_0[(frame_0<-2**14)]   += 2**15
+    #frame_a = np.array(data[nx*ny:2*nx*ny], dtype='i8').reshape(nx,ny)
+    #frame_a = frame_a[ndummy:-1*ndummy,ndummy:-1*ndummy] - frame_0
+    frame_a = np.array(data[0*nx*ny:1*nx*ny], dtype='i8').reshape(nx,ny)
     frame_a = frame_a[ndummy:-1*ndummy,ndummy:-1*ndummy] - frame_0
 
     im_ar   = []
     imsum = copy(frame_a)
-    for i in range(nf-2):
-      frame_b   = np.array(data[(i+2)*nx*ny:(i+3)*nx*ny], dtype='i8').reshape(nx,ny)
+    #for i in range(nf-2):
+    for i in range(nf-1):
+      #frame_b   = np.array(data[(i+2)*nx*ny:(i+3)*nx*ny], dtype='i8').reshape(nx,ny)
+      frame_b   = np.array(data[(i+1)*nx*ny:(i+2)*nx*ny], dtype='i8').reshape(nx,ny)
       frame_b   = frame_b[ndummy:-1*ndummy,ndummy:-1*ndummy]  - frame_0
 
       frame_d   = frame_b - frame_a
